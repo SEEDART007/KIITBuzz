@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import { toast } from "react-toastify";
 
@@ -6,6 +7,8 @@ export default function PostCard({ post }) {
   const [upvotes, setUpvotes] = useState(post.upvotes);
   const [hasUpvoted, setHasUpvoted] = useState(post.hasUpvoted || false);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleUpvote = async () => {
     if (hasUpvoted || loading) return;
@@ -27,28 +30,31 @@ export default function PostCard({ post }) {
     }
   };
 
+  // Show only first 200 characters as preview
+  const previewContent =
+    post.content.length > 200 ? post.content.slice(0, 200) + "..." : post.content;
+
   return (
-    <div className="bg-white p-6 rounded shadow mb-4 hover:shadow-lg transition">
-      {/* Header: Avatar + Anonymous + Category */}
+    <div className="bg-white p-6 rounded shadow mb-6 hover:shadow-lg transition flex flex-col justify-between min-h-[250px]">
+      {/* Header: Avatar + meta */}
       <div className="flex items-center mb-3">
         <img
-          src={post.author?.avatar || "/avatars/default.png"} // load avatar from user
+          src={post.author?.avatar || "/avatars/default.png"}
           alt="avatar"
-          className="w-10 h-10 rounded-full mr-3 object-cover"
+          className="w-10 h-10 rounded-full mr-3"
         />
-        <div>
-          <span className="font-semibold">Anonymous</span>
-          <span className="text-sm text-gray-500 ml-2">{post.category}</span>
+        <div className="text-sm text-gray-500">
+          <span className="font-semibold">Anonymous</span>{" "}
+          {post.author?.department} {post.author?.year} | {post.category}
         </div>
       </div>
 
-      {/* Post title & content */}
+      {/* Title and preview */}
       <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-      <p className="text-gray-700 mb-4 whitespace-pre-line">{post.content}</p>
+      <p className="text-gray-700 mb-4 whitespace-pre-line">{previewContent}</p>
 
-      {/* Upvote button */}
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-500">{post.authorTag}</span>
+      {/* Footer: Upvote, views, Read More */}
+      <div className="flex justify-between items-center mt-auto">
         <button
           onClick={handleUpvote}
           disabled={hasUpvoted || loading}
@@ -59,6 +65,15 @@ export default function PostCard({ post }) {
           }`}
         >
           Upvote ({upvotes})
+        </button>
+
+        <span className="text-sm text-gray-500">{post.views} views</span>
+
+        <button
+          onClick={() => navigate(`/blogs/${post._id}`)}
+          className="text-blue-600 hover:underline text-sm font-medium"
+        >
+          Read More
         </button>
       </div>
     </div>

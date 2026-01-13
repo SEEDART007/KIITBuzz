@@ -2,30 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import api from "../api/api";
 import PostCard from "../components/Postcard";
 
-
 export default function AllBlogs() {
   const [posts, setPosts] = useState([]);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   const observerRef = useRef(null);
+
+  // Merge new posts, remove duplicates by _id
+  const mergePosts = (oldPosts, newPosts) => {
+    const map = new Map();
+    [...oldPosts, ...newPosts].forEach(post => map.set(post._id, post));
+    return Array.from(map.values());
+  };
 
   const fetchPosts = async () => {
     if (loading || !hasMore) return;
 
     setLoading(true);
     try {
-      const res = await api.get(`/blogs?page=${page}&limit=10`);
+      const lastId = posts[posts.length - 1]?._id;
+      const res = await api.get(
+        `/blogs?limit=10${lastId ? `&lastId=${lastId}` : ""}`
+      );
 
       if (res.data.length === 0) {
         setHasMore(false);
       } else {
-        setPosts(prev => [...prev, ...res.data]);
-        setPage(prev => prev + 1);
+        setPosts(prev => mergePosts(prev, res.data));
       }
     } catch (err) {
-      console.error("Failed to load posts");
+      console.error("Failed to load posts", err);
     } finally {
       setLoading(false);
     }
@@ -38,17 +45,20 @@ export default function AllBlogs() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && hasMore && !loading) {
           fetchPosts();
         }
       },
-      { threshold: 1 }
+      { root: null, threshold: 1.0 }
     );
 
-    if (observerRef.current) observer.observe(observerRef.current);
+    const currentRef = observerRef.current;
+    if (currentRef) observer.observe(currentRef);
 
-    return () => observer.disconnect();
-  }, [observerRef.current, hasMore]);
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, [observerRef, hasMore, loading]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -59,18 +69,13 @@ export default function AllBlogs() {
       ))}
 
       {loading && (
-        <p className="text-center text-gray-500 mt-6">
-          Loading more posts...
-        </p>
+        <p className="text-center text-gray-500 mt-6">Loading more posts...</p>
       )}
 
-      {!hasMore && (
-        <p className="text-center text-gray-400 mt-6">
-          You’ve reached the end 🎉
-        </p>
+      {!hasMore && posts.length > 0 && (
+        <p className="text-center text-gray-400 mt-6">You’ve reached the end 🎉</p>
       )}
 
-      {/* Observer target */}
       <div ref={observerRef} className="h-10"></div>
     </div>
   );

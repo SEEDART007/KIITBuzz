@@ -48,13 +48,16 @@ const createPost = async (req, res) => {
 // GET /blogs?page=1&limit=10
 const getFeed = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const lastId = req.query.lastId;
 
-    const posts = await BlogPost.find({ isHidden: false })
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit).populate("author", "avatar"); 
+    let filter = { isHidden: false };
+    if (lastId) filter._id = { $lt: lastId }; // fetch older posts for infinite scroll
+
+    const posts = await BlogPost.find(filter)
+      .sort({ _id: -1 }) // newest first
+      .limit(limit)
+      .populate("author", "avatar department year"); // fetch author avatar and info
 
     res.json(posts);
   } catch (err) {

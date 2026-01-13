@@ -26,7 +26,16 @@ export default function Profile() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">Profile</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Profile</h1>
+
+      {/* Avatar */}
+      <div className="flex justify-center mb-6">
+        <img
+          src={user.avatar || "/avatars/default.png"} // fallback avatar
+          alt="avatar"
+          className="w-24 h-24 rounded-full border-2 border-blue-500"
+        />
+      </div>
 
       <div className="mb-4">
         <p className="text-gray-600">Email:</p>

@@ -10,6 +10,7 @@ import CreatePost from "./pages/CreatePost";
 import Profile from "./pages/Profile";
 import Hero from "./pages/Hero";
 import AllBlogs from "./pages/AllBlogs";
+import BlogPage from "./pages/BlogPage";
 
 
 // Simple ProtectedRoute component
@@ -41,6 +42,11 @@ function App() {
              </ProtectedRoute>
           }
         />
+        <Route path="/blogs/:id" element={
+          <ProtectedRoute>
+          <BlogPage />
+          </ProtectedRoute>
+          } />
         <Route
           path="/create"
           element={
