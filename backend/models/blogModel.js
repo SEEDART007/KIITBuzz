@@ -33,6 +33,8 @@ const blogPostSchema = new mongoose.Schema({
     index: true
   },
 
+  author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
   year: {
     type: String,   // "1st", "2nd", "3rd", "Final"
     index: true

@@ -2,6 +2,18 @@ const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
+
+const avatars = [
+  "/avatars/1.png",
+  "/avatars/2.png",
+  "/avatars/3.png",
+  "/avatars/4.png",
+  "/avatars/5.png"
+];
+
+
+
 /* REGISTER */
 const register = async (req, res) => {
   try {
@@ -16,11 +28,14 @@ const register = async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
+    const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+
     const user = await User.create({
       email,
       passwordHash: hash,
       department,
-      year
+      year,
+      avatar
     });
 
     // Generate token immediately

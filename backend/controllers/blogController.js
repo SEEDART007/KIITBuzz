@@ -5,12 +5,14 @@ const mongoose = require("mongoose")
 const createPost = async (req, res) => {
   try {
     const { title, content, category } = req.body;
+    const user = req.user;
     const authorTag = `${req.user.department} ${req.user.year}`;
 
     const post = await BlogPost.create({
       title,
       content,
       category,
+      author: user._id,
       authorEmail: req.user.email,
       authorTag,
       department: req.user.department,
@@ -52,7 +54,7 @@ const getFeed = async (req, res) => {
     const posts = await BlogPost.find({ isHidden: false })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit).populate("author", "avatar"); 
 
     res.json(posts);
   } catch (err) {
