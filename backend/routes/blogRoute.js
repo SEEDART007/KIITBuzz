@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/",auth, createPost);
 
 // Get feed (filters: department, year, category)
-router.get("/",auth,  getFeed);
+router.get("/",  getFeed);
 
 // Get single post
 router.get("/:id", auth,  getPost);

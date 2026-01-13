@@ -1,15 +1,28 @@
-require('dotenv').config()
 const jwt = require("jsonwebtoken");
 
-function auth(req, res, next) {
+const auth = (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({ msg: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ msg: "Malformed token" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { email, department, year }
-    next(); 
-  } catch {
-    res.status(401).json({ msg: "Unauthorized" });
+
+    // decoded MUST contain _id
+    req.user = decoded;
+
+    next();
+  } catch (err) {
+    console.error("Auth error:", err.message);
+    return res.status(401).json({ msg: "Unauthorized" });
   }
-}
+};
 
 module.exports = auth;

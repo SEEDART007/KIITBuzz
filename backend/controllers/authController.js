@@ -26,6 +26,7 @@ const register = async (req, res) => {
     // Generate token immediately
     const token = jwt.sign(
       {
+         _id: user._id,
         email: user.email,
         department: user.department,
         year: user.year
@@ -54,6 +55,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign(
       {
+         _id: user._id,
         email: user.email,
         department: user.department,
         year: user.year
@@ -68,4 +70,28 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-passwordHash");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+//currently not using
+const updateProfile = async (req, res) => {
+  const { department, year } = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { department, year },
+      { new: true }
+    ).select("-passwordHash");
+    res.json({ msg: "Profile updated", user });
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+module.exports = { register, login,getProfile };

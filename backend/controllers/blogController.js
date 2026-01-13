@@ -1,4 +1,5 @@
 const BlogPost = require("../models/blogModel");
+const mongoose = require("mongoose")
 
 /* Create Post */
 const createPost = async (req, res) => {
@@ -23,24 +24,42 @@ const createPost = async (req, res) => {
 };
 
 /* Get Feed */
+// const getFeed = async (req, res) => {
+//   try {
+//     const { department, year, category } = req.query;
+
+//     let filter = { isHidden: false };
+//     if (department) filter.department = department;
+//     if (year) filter.year = year;
+//     if (category) filter.category = category;
+
+//     const posts = await BlogPost.find(filter)
+//       .sort({ createdAt: -1 })
+//       .limit(100);
+
+//     res.json(posts);
+//   } catch (err) {
+//     res.status(500).json({ msg: err.message });
+//   }
+// };
+
+// GET /blogs?page=1&limit=10
 const getFeed = async (req, res) => {
   try {
-    const { department, year, category } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    let filter = { isHidden: false };
-    if (department) filter.department = department;
-    if (year) filter.year = year;
-    if (category) filter.category = category;
-
-    const posts = await BlogPost.find(filter)
+    const posts = await BlogPost.find({ isHidden: false })
       .sort({ createdAt: -1 })
-      .limit(100);
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     res.json(posts);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
 };
+
 
 /* Get Single Post */
 const getPost = async (req, res) => {
@@ -60,27 +79,40 @@ const getPost = async (req, res) => {
 /* Upvote */
 const upvotePost = async (req, res) => {
   try {
-    const post = await BlogPost.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: "Post not found" });
-
-    const userEmail = req.user.email;
-
-    // Check if user already upvoted
-    if (post.upvotedBy.includes(userEmail)) {
-      return res.status(400).json({ msg: "You already upvoted this post" });
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ msg: "Unauthorized" });
     }
 
-    // Increment upvotes and add user to upvotedBy
-    post.upvotes += 1;
-    post.upvotedBy.push(userEmail);
-    await post.save();
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ msg: "Invalid post ID" });
+    }
+
+    const userId = new mongoose.Types.ObjectId(req.user._id);
+
+    const post = await BlogPost.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        upvotedBy: { $ne: userId }
+      },
+      {
+        $inc: { upvotes: 1 },
+        $addToSet: { upvotedBy: userId }
+      },
+      { new: true }
+    );
+
+    if (!post) {
+      return res
+        .status(400)
+        .json({ msg: "Already upvoted or post not found" });
+    }
 
     res.json({ upvotes: post.upvotes });
   } catch (err) {
-    res.status(500).json({ msg: "Error" });
+    console.error("UPVOTE ERROR:", err.message);
+    res.status(500).json({ msg: "Internal server error" });
   }
 };
-
 /* Delete own post */
 const deletePost = async (req, res) => {
   try {
