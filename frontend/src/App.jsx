@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Hero from "./pages/Hero";
 import AllBlogs from "./pages/AllBlogs";
 import BlogPage from "./pages/BlogPage";
+import AdminPage from "./pages/AdminPage";
 
 
 // Simple ProtectedRoute component
@@ -63,6 +64,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/admin" element={<AdminPage/>}/>
        
 
         {/* Catch all 404 */}

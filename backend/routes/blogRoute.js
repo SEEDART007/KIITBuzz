@@ -7,11 +7,14 @@ const {
   getPost,
   upvotePost,
   deletePost,
-  adminDeleteBlog
+  adminDeleteBlog,
+  getAllPostsByAdmin
 } =  require("../controllers/blogController");
 
 const router = express.Router();
 
+//get all posts by admin 
+router.get("/get-posts",auth,adminOnly,getAllPostsByAdmin)
 // Create a new post
 router.post("/",auth, createPost);
 
@@ -29,5 +32,6 @@ router.delete("/:id",auth,  deletePost);
 
 //delete by admin
 router.delete("/delete-post/:id", auth, adminOnly, adminDeleteBlog)
+
 
 module.exports = router;

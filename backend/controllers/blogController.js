@@ -145,4 +145,18 @@ const adminDeleteBlog = async (req, res) => {
   }
 }
 
-module.exports = { createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog };
+const getAllPostsByAdmin = async (req, res) => {
+  try {
+    const posts = await BlogPost.find()
+      .populate("author", "email")
+      .sort({ createdAt: -1 });
+
+    res.json(posts);
+  } catch (err) {
+    console.error("Get posts error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+module.exports = { createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog, getAllPostsByAdmin };

@@ -192,6 +192,19 @@ const banUserByAdmin = async (req, res) => {
   }
 };
 
+const getAllUsersByAdmin = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select("-passwordHash")
+      .sort({ createdAt: -1 });
+
+    res.json(users);
+  } catch (err) {
+    console.error("Get users error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
-module.exports = { register, login,getProfile,deleteUserByAdmin, banUserByAdmin };
+
+module.exports = { register, login,getProfile,deleteUserByAdmin, banUserByAdmin, getAllUsersByAdmin };
