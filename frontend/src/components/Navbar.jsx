@@ -1,3 +1,4 @@
+import { NotebookPen, UserRoundPen } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
@@ -5,12 +6,6 @@ export default function Navbar() {
 
   // Check if user is logged in (token exists)
   const isLoggedIn = !!localStorage.getItem("token");
-
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // remove token
-    navigate("/login");               // redirect to login
-  };
-
   return (
     <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
       <Link to="/" className="text-xl font-bold">
@@ -19,15 +14,26 @@ export default function Navbar() {
       <div className="space-x-4">
         {isLoggedIn ? (
           <>
-            <Link to="/create" className="hover:underline">
-              Create Post
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-4">
+  {/* Create Post */}
+  <Link
+    to="/create"
+    className="p-2 rounded hover:bg-blue-500 transition flex items-center"
+    title="Create Post"
+  >
+    <NotebookPen size={20} />
+  </Link>
+
+  {/* Profile */}
+  <Link
+    to="/profile"
+    className="p-2 rounded hover:bg-green-500 transition flex items-center"
+    title="Profile"
+  >
+    <UserRoundPen size={20} />
+  </Link>
+</div>
+
           </>
         ) : (
           <>

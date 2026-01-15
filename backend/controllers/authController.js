@@ -17,7 +17,7 @@ const avatars = [
 /* REGISTER */
 const register = async (req, res) => {
   try {
-    const { email, password, department, year } = req.body;
+    const { email, password, department, year,role } = req.body;
 
     if (!email.endsWith("@kiit.ac.in")) {
       return res.status(403).json({ msg: "Only university emails allowed" });
@@ -35,7 +35,8 @@ const register = async (req, res) => {
       passwordHash: hash,
       department,
       year,
-      avatar
+      avatar,
+      role
     });
 
     // Generate token immediately
@@ -44,7 +45,8 @@ const register = async (req, res) => {
          _id: user._id,
         email: user.email,
         department: user.department,
-        year: user.year
+        year: user.year,
+        role: user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -73,7 +75,8 @@ const login = async (req, res) => {
          _id: user._id,
         email: user.email,
         department: user.department,
-        year: user.year
+        year: user.year,
+        role : user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -109,4 +112,86 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login,getProfile };
+
+const deleteUserByAdmin =  async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent admin from deleting themselves
+    if (req.user._id.toString() === id) {
+      return res.status(400).json({ message: "You cannot delete your own account" });
+    }
+    console.log(id)
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: " not found" });
+    }
+
+    await user.deleteOne();
+
+    res.json({
+      message: "User deleted successfully",
+      deletedUser: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+const banUserByAdmin = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const targetUserId = req.params.id;
+
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ message: "Ban reason is required" });
+    }
+
+    // Prevent admin banning themselves
+    if (req.user._id.toString() === targetUserId) {
+      return res.status(400).json({ message: "You cannot ban yourself" });
+    }
+
+    const user = await User.findById(targetUserId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isBanned) {
+      return res.status(400).json({ message: "User is already banned" });
+    }
+
+    user.isBanned = true;
+    user.banReason = reason;
+    user.bannedAt = new Date();
+
+    await user.save();
+
+    res.json({
+      message: "User banned successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        banReason: user.banReason,
+        bannedAt: user.bannedAt
+      }
+    });
+
+  } catch (err) {
+    console.error("Ban error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+module.exports = { register, login,getProfile,deleteUserByAdmin, banUserByAdmin };

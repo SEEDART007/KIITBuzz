@@ -1,0 +1,18 @@
+// middleware/roles.js
+
+module.exports = function adminOnly(req, res, next) {
+  try {
+    // req.user should be set by auth middleware
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};

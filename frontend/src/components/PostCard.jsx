@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import { toast } from "react-toastify";
+import { ThumbsUp } from "lucide-react";
 
 export default function PostCard({ post }) {
   const [upvotes, setUpvotes] = useState(post.upvotes);
@@ -55,17 +56,20 @@ export default function PostCard({ post }) {
 
       {/* Footer: Upvote, views, Read More */}
       <div className="flex justify-between items-center mt-auto">
-        <button
-          onClick={handleUpvote}
-          disabled={hasUpvoted || loading}
-          className={`px-3 py-1 rounded transition ${
-            hasUpvoted
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
-          }`}
-        >
-          Upvote ({upvotes})
-        </button>
+      <button
+  onClick={handleUpvote}
+  disabled={hasUpvoted || loading}
+  aria-label={hasUpvoted ? "Already upvoted" : "Upvote this post"}
+  className={`
+    flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition 
+    ${hasUpvoted 
+        ? "bg-gray-300 text-gray-600 cursor-not-allowed" 
+        : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md"}
+  `}
+>
+  <ThumbsUp size={18} />
+  <span>{upvotes}</span>
+</button>
 
         <span className="text-sm text-gray-500">{post.views} views</span>
 

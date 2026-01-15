@@ -1,6 +1,7 @@
 const BlogPost = require("../models/blogModel");
 const mongoose = require("mongoose")
 
+
 /* Create Post */
 const createPost = async (req, res) => {
   try {
@@ -134,4 +135,14 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getFeed, getPost, upvotePost, deletePost };
+
+const adminDeleteBlog = async (req, res) => {
+  try {
+    await BlogPost.findByIdAndDelete(req.params.id);
+    res.json({ message: "post deleted by admin" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = { createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog };

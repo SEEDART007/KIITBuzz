@@ -1,11 +1,13 @@
 const express = require('express')
 const auth = require('../middleware/auth')
+const adminOnly = require('../middleware/roles')
 const {
   createPost,
   getFeed,
   getPost,
   upvotePost,
-  deletePost
+  deletePost,
+  adminDeleteBlog
 } =  require("../controllers/blogController");
 
 const router = express.Router();
@@ -24,5 +26,8 @@ router.post("/:id/upvote", auth,  upvotePost);
 
 // Delete own post
 router.delete("/:id",auth,  deletePost);
+
+//delete by admin
+router.delete("/delete-post/:id", auth, adminOnly, adminDeleteBlog)
 
 module.exports = router;
