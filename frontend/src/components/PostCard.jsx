@@ -1,71 +1,56 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/api";
 import { toast } from "react-toastify";
 import { ThumbsUp, Trash2 } from "lucide-react";
-import {jwtDecode} from "jwt-decode";
+import api from "../api/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function PostCard({ post, onDelete }) {
-  const [upvotes, setUpvotes] = useState(post.upvotes);
-  const [hasUpvoted, setHasUpvoted] = useState(post.hasUpvoted || false);
-  const [loading, setLoading] = useState(false);
-
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  /* ================= AUTH / OWNERSHIP ================= */
+  const [upvotes, setUpvotes] = useState(post.upvotes);
+  const [hasUpvoted, setHasUpvoted] = useState(post.hasUpvoted || false);
+  const [upvoting, setUpvoting] = useState(false);
 
-  const token = localStorage.getItem("token");
-  let userId = null;
-
-  try {
-    userId = token ? jwtDecode(token)._id : null;
-  } catch {
-    userId = null;
-  }
+  /* ================= OWNERSHIP ================= */
 
   const isOwner =
+    user &&
     post.author &&
-    (post.author._id === userId || post.author === userId);
+    (post.author._id === user._id || post.author === user._id);
 
   /* ================= UPVOTE ================= */
 
   const handleUpvote = async () => {
-    if (hasUpvoted || loading) return;
+    if (hasUpvoted || upvoting) return;
 
     setHasUpvoted(true);
     setUpvotes(prev => prev + 1);
-    setLoading(true);
+    setUpvoting(true);
 
     try {
       const res = await api.post(`/blogs/${post._id}/upvote`);
       setUpvotes(res.data.upvotes);
-      toast.success("Upvoted successfully 👍");
+      toast.success("Upvoted 👍");
     } catch (err) {
       setHasUpvoted(false);
       setUpvotes(prev => prev - 1);
-      toast.error(err?.response?.data?.msg || "Error upvoting");
+      toast.error(err?.response?.data?.msg || "Failed to upvote");
     } finally {
-      setLoading(false);
+      setUpvoting(false);
     }
   };
 
-  /* ================= DELETE (OWNER ONLY) ================= */
+  /* ================= DELETE (UI ONLY) ================= */
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
     if (!onDelete) return;
 
     const confirm = window.confirm("Are you sure you want to delete this post?");
     if (!confirm) return;
 
-    try {
-      await api.delete(`/blogs/${post._id}`);
-      toast.success("Post deleted");
-      onDelete(post._id); // ✅ remove from Dashboard state
-    } catch (err) {
-      toast.error(
-        err?.response?.data?.message || "Failed to delete post"
-      );
-    }
+    onDelete(post._id); // 🔥 ONLY call parent
   };
 
   /* ================= UI ================= */
@@ -79,7 +64,7 @@ export default function PostCard({ post, onDelete }) {
     <div className="bg-white p-6 rounded shadow mb-6 hover:shadow-lg transition flex flex-col justify-between min-h-[250px]">
       
       {/* Header */}
-      <div className="flex items-center mb-3 justify-between">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center">
           <img
             src={post.author?.avatar || "/avatars/default.png"}
@@ -92,10 +77,9 @@ export default function PostCard({ post, onDelete }) {
           </div>
         </div>
 
-        {/* DELETE BUTTON (OWNER ONLY) */}
         {isOwner && (
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             className="text-red-500 hover:text-red-700"
             title="Delete post"
           >
@@ -114,23 +98,19 @@ export default function PostCard({ post, onDelete }) {
       <div className="flex justify-between items-center mt-auto">
         <button
           onClick={handleUpvote}
-          disabled={hasUpvoted || loading}
-          className={`
-            flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition 
+          disabled={hasUpvoted || upvoting}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition 
             ${
               hasUpvoted
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md"
-            }
-          `}
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
         >
           <ThumbsUp size={18} />
           <span>{upvotes}</span>
         </button>
 
-        <span className="text-sm text-gray-500">
-          {post.views} views
-        </span>
+        <span className="text-sm text-gray-500">{post.views} views</span>
 
         <button
           onClick={() => navigate(`/blogs/${post._id}`)}

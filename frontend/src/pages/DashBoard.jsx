@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import PostCard from "../components/PostCard";
+import PostCard from "../components/Postcard";
 import { toast } from "react-toastify";
 
 export default function Dashboard() {
@@ -24,15 +24,14 @@ export default function Dashboard() {
     fetchMyBlogs();
   }, []);
 
-  // ✅ DELETE HANDLER
-  const handleDelete = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+  /* ================= DELETE (ONLY HERE) ================= */
 
+  const handleDelete = async (postId) => {
     try {
       await api.delete(`/blogs/${postId}`);
       toast.success("Post deleted");
 
-      // ✅ remove from UI
+      // ✅ update UI once
       setPosts(prev => prev.filter(post => post._id !== postId));
     } catch (err) {
       toast.error(
@@ -61,7 +60,7 @@ export default function Dashboard() {
             <PostCard
               key={post._id}
               post={post}
-              onDelete={handleDelete} // ✅ PASS HANDLER
+              onDelete={handleDelete}
             />
           ))}
       </div>
