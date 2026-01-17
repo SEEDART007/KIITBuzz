@@ -82,6 +82,45 @@ const getPost = async (req, res) => {
   }
 };
 
+//logged-in user blogs
+const getMyBlogs = async (req, res) => {
+  try {
+    const blogs = await BlogPost.find({ author: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.json({
+      count: blogs.length,
+      blogs,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//delete own blog 
+const deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const post = await BlogPost.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // ❌ admin ignored — ONLY owner allowed
+    if (post.author.toString() !== req.user._id) {
+      return res.status(403).json({ message: "You can delete only your own posts" });
+    }
+
+    await post.deleteOne();
+
+    res.json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Delete post error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 /* Upvote */
 const upvotePost = async (req, res) => {
   try {
@@ -120,20 +159,20 @@ const upvotePost = async (req, res) => {
   }
 };
 /* Delete own post */
-const deletePost = async (req, res) => {
-  try {
-    const post = await BlogPost.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: "Not found" });
+// const deletePost = async (req, res) => {
+//   try {
+//     const post = await BlogPost.findById(req.params.id);
+//     if (!post) return res.status(404).json({ msg: "Not found" });
 
-    if (post.authorEmail !== req.user.email)
-      return res.status(403).json({ msg: "Not your post" });
+//     if (post.authorEmail !== req.user.email)
+//       return res.status(403).json({ msg: "Not your post" });
 
-    await post.deleteOne();
-    res.json({ msg: "Deleted" });
-  } catch {
-    res.status(500).json({ msg: "Error" });
-  }
-};
+//     await post.deleteOne();
+//     res.json({ msg: "Deleted" });
+//   } catch {
+//     res.status(500).json({ msg: "Error" });
+//   }
+// };
 
 
 const adminDeleteBlog = async (req, res) => {
@@ -159,4 +198,4 @@ const getAllPostsByAdmin = async (req, res) => {
 };
 
 
-module.exports = { createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog, getAllPostsByAdmin };
+module.exports = { deletePost,createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog, getAllPostsByAdmin,getMyBlogs };

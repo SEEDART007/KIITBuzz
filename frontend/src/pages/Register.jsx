@@ -12,7 +12,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/register", { email, password, department, year });
+      const res = await api.post("/auth/register", { email, password, department, year });
 
       // Auto-login: store JWT in localStorage
       localStorage.setItem("token", res.data.token);

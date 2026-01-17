@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
     const fetchData = async () => {
       try {
         const [usersRes, postsRes] = await Promise.all([
-          api.get("/getAll"),
+          api.get("/auth/getAll"),
           api.get("/blogs/get-posts"),
         ]);
         setUsers(usersRes.data);

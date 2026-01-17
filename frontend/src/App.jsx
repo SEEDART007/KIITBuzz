@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import {jwtDecode} from "jwt-decode"
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -14,20 +15,42 @@ import BlogPage from "./pages/BlogPage";
 import AdminPage from "./pages/AdminPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 
+/* ---------------- PROTECTED ROUTES ---------------- */
 
-// Simple ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  return token ? children : <Navigate to="/login" replace />;
 };
+
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  try {
+    const decoded = jwtDecode(token);
+
+    if (decoded.role !== "admin") {
+      return <Navigate to="/" replace />;
+    }
+
+    return children;
+  } catch (err) {
+    // Invalid token
+    localStorage.removeItem("token");
+    return <Navigate to="/login" replace />;
+  }
+};
+
+/* ---------------- APP ---------------- */
 
 function App() {
   return (
     <>
-     
-
       <Routes>
-         {/* Landing */}
+        {/* Landing */}
         <Route path="/" element={<Hero />} />
 
         {/* Public */}
@@ -35,20 +58,25 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected routes */}
+        {/* Protected */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
-             </ProtectedRoute>
+            </ProtectedRoute>
           }
         />
-        <Route path="/blogs/:id" element={
-          <ProtectedRoute>
-          <BlogPage />
-          </ProtectedRoute>
-          } />
+
+        <Route
+          path="/blogs/:id"
+          element={
+            <ProtectedRoute>
+              <BlogPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/create"
           element={
@@ -57,6 +85,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/profile"
           element={
@@ -66,22 +95,37 @@ function App() {
           }
         />
 
-        <Route path="/admin" element={<AdminPage/>}/>
-        <Route path="/analytics" element={<AnalyticsPage/>}/>
-       
+        {/* Admin only */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          }
+        />
 
-        {/* Catch all 404 */}
-        <Route path="*" element={<h1 className="text-center mt-20">404 - Page Not Found</h1>} />
+        <Route
+          path="/analytics"
+          element={
+            <AdminRoute>
+              <AnalyticsPage />
+            </AdminRoute>
+          }
+        />
+
+        {/* 404 */}
+        <Route
+          path="*"
+          element={<h1 className="text-center mt-20">404 - Page Not Found</h1>}
+        />
       </Routes>
-      <ToastContainer 
+
+      <ToastContainer
         position="top-right"
         autoClose={3000}
-        hideProgressBar={false}
         newestOnTop
         closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
         pauseOnHover
       />
     </>

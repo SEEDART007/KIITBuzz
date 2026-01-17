@@ -13,7 +13,7 @@ export default function AdminPage() {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const res = await api.get("/getAll");
+      const res = await api.get("/auth/getAll");
       setUsers(res.data);
     } catch (err) {
       console.error("Failed to load users", err);
@@ -38,7 +38,7 @@ export default function AdminPage() {
     if (!reason) return;
 
     try {
-      await api.put(`/ban-user/${id}`, { reason });
+      await api.put(`/auth/ban-user/${id}`, { reason });
       fetchUsers(); // refresh user list
     } catch (err) {
       console.error(err);

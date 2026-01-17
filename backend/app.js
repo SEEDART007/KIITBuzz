@@ -10,12 +10,18 @@ const helmet = require('helmet');
 
 
 app.use(express.json())
+app.use(cors());
 
 app.use(helmet())
 
-app.use(sqlSanitizer())
+// app.use(
+//   sqlSanitizer({
+//     sanitizeQuery: false,   // ⛔ prevent req.query mutation
+//     allowDots: true,
+//     replaceWith: "_"
+//   })
+// );
 
-app.use(cors());
 
 const limiter = rateLimit({
     max:100,
@@ -23,7 +29,7 @@ const limiter = rateLimit({
     message:'too many request!!try again later'
 })
 app.use('/api/v1',limiter)
-app.use(xss());
+// app.use(xss());
 
 
 

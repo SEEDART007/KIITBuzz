@@ -9,7 +9,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await api.get("/me"); // must include Authorization header
+        const res = await api.get("/auth/me"); // must include Authorization header
         setUser(res.data);
       } catch (err) {
         toast.error(err.response?.data?.msg || "Failed to load profile");

@@ -8,7 +8,8 @@ const {
   upvotePost,
   deletePost,
   adminDeleteBlog,
-  getAllPostsByAdmin
+  getAllPostsByAdmin,
+  getMyBlogs
 } =  require("../controllers/blogController");
 
 const router = express.Router();
@@ -21,8 +22,12 @@ router.post("/",auth, createPost);
 // Get feed (filters: department, year, category)
 router.get("/",  getFeed);
 
+//get logged in user's blogs
+router.get("/getMyBlogs",auth,getMyBlogs)
+
 // Get single post
 router.get("/:id", auth,  getPost);
+
 
 // Upvote
 router.post("/:id/upvote", auth,  upvotePost);
@@ -32,6 +37,9 @@ router.delete("/:id",auth,  deletePost);
 
 //delete by admin
 router.delete("/delete-post/:id", auth, adminOnly, adminDeleteBlog)
+
+//delete own blogs
+router.delete("/:id", auth, deletePost);
 
 
 module.exports = router;
