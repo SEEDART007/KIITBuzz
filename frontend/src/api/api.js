@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base URL of your backend
 const api = axios.create({
-  baseURL: "http://localhost:3000/api/v1", // replace with your backend URL
+  baseURL: "http://localhost:3000/api/v1/auth", // replace with your backend URL
 });
 
 // Automatically attach JWT token from localStorage
