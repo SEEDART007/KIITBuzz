@@ -70,7 +70,7 @@ export default function AdminPage() {
         className="flex justify-between items-center py-2 border-b last:border-b-0"
       >
         <span className="truncate">
-          {u.email}
+          {u.username}
           {u.isBanned && <strong className="text-red-600 ml-2">(BANNED)</strong>}
         </span>
         {!u.isBanned && (

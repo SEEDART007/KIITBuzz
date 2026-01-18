@@ -65,6 +65,9 @@ export default function Navbar() {
               <Link to="/register" className="hover:underline">
                 Register
               </Link>
+               <Link to="/about" className="hover:underline">
+                About
+              </Link>
             </>
           )}
         </div>
@@ -132,6 +135,14 @@ export default function Navbar() {
                 className="p-2 rounded hover:bg-blue-500"
               >
                 Register
+              </Link>
+
+              <Link
+                to="/about"
+                onClick={() => setOpen(false)}
+                className="p-2 rounded hover:bg-blue-500"
+              >
+                About
               </Link>
             </>
           )}

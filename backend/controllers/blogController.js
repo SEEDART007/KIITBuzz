@@ -70,17 +70,24 @@ const getFeed = async (req, res) => {
 /* Get Single Post */
 const getPost = async (req, res) => {
   try {
-    const post = await BlogPost.findById(req.params.id);
-    if (!post || post.isHidden) return res.status(404).json({ msg: "Not found" });
+    // Fetch post AND populate author fields
+    const post = await BlogPost.findById(req.params.id)
+      .populate("author", "username avatar department year");
 
+    if (!post || post.isHidden) 
+      return res.status(404).json({ msg: "Not found" });
+
+    // Increment views
     post.views += 1;
     await post.save();
 
     res.json(post);
-  } catch {
+  } catch (err) {
+    console.error("getPost error:", err);
     res.status(404).json({ msg: "Not found" });
   }
 };
+
 
 //logged-in user blogs
 const getMyBlogs = async (req, res) => {
@@ -152,7 +159,7 @@ const upvotePost = async (req, res) => {
     if (!post) {
       return res
         .status(400)
-        .json({ msg: "Already upvoted or post not found" });
+        .json({ msg: "Already upvoted" });
     }
 
     res.json({ upvotes: post.upvotes });
@@ -190,7 +197,7 @@ const adminDeleteBlog = async (req, res) => {
 const getAllPostsByAdmin = async (req, res) => {
   try {
     const posts = await BlogPost.find()
-      .populate("author", "email")
+      .populate("author", "username email")
       .sort({ createdAt: -1 });
 
     res.json(posts);

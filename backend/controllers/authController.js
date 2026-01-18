@@ -12,7 +12,7 @@ const avatars = [
   "/avatars/5.png"
 ];
 
-
+const allowedBatches = ["22", "23", "24", "25"];
 
 /* REGISTER */
 const register = async (req, res) => {
@@ -25,6 +25,13 @@ if (existingUsername) {
     if (!email.endsWith("@kiit.ac.in")) {
       return res.status(403).json({ msg: "Only university emails allowed" });
     }
+
+  const rollPrefix = email.split("@")[0]; // "2329212"
+  const batch = rollPrefix.slice(0, 2);   // "23"
+
+  if (!allowedBatches.includes(batch)) {
+    return res.status(403).json({ msg: "Invalid Email" });
+  }
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ msg: "User already exists" });
@@ -188,6 +195,7 @@ const banUserByAdmin = async (req, res) => {
       message: "User banned successfully",
       user: {
         id: user._id,
+        username: user.username, 
         email: user.email,
         banReason: user.banReason,
         bannedAt: user.bannedAt

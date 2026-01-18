@@ -62,7 +62,7 @@ export default function BlogPage() {
           className="w-12 h-12 rounded-full mr-3"
         />
         <div className="text-sm text-gray-500">
-          <span className="font-semibold">Anonymous</span>{" "}
+          <span className="font-semibold">{post.author?.username || "Anonymous"}</span>{" "}
           {post.author?.department} {post.author?.year} | {post.category}
         </div>
       </div>
