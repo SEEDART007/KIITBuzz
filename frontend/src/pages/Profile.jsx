@@ -37,6 +37,11 @@ export default function Profile() {
         />
       </div>
 
+
+       <div className="mb-4">
+        <p className="text-gray-600">Username:</p>
+        <p className="text-lg">{user.username}</p>
+      </div>
       <div className="mb-4">
         <p className="text-gray-600">Email:</p>
         <p className="text-lg">{user.email}</p>

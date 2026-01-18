@@ -17,8 +17,11 @@ const avatars = [
 /* REGISTER */
 const register = async (req, res) => {
   try {
-    const { email, password, department, year,role } = req.body;
-
+    const { username,email, password, department, year,role } = req.body;
+     const existingUsername = await User.findOne({ username });
+if (existingUsername) {
+  return res.status(400).json({ msg: "Username already taken" });
+}
     if (!email.endsWith("@kiit.ac.in")) {
       return res.status(403).json({ msg: "Only university emails allowed" });
     }
@@ -31,6 +34,7 @@ const register = async (req, res) => {
     const avatar = avatars[Math.floor(Math.random() * avatars.length)];
 
     const user = await User.create({
+      username,
       email,
       passwordHash: hash,
       department,

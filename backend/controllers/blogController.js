@@ -58,7 +58,7 @@ const getFeed = async (req, res) => {
     const posts = await BlogPost.find(filter)
       .sort({ _id: -1 }) // newest first
       .limit(limit)
-      .populate("author", "avatar department year"); // fetch author avatar and info
+      .populate("author", "username avatar department year"); // fetch author avatar and info
 
     res.json(posts);
   } catch (err) {
@@ -86,16 +86,19 @@ const getPost = async (req, res) => {
 const getMyBlogs = async (req, res) => {
   try {
     const blogs = await BlogPost.find({ author: req.user._id })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate("author", "username avatar department year"); // 🔑 populate author
 
     res.json({
       count: blogs.length,
       blogs,
     });
   } catch (err) {
+    console.error("getMyBlogs error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 //delete own blog 
 const deletePost = async (req, res) => {
@@ -197,5 +200,44 @@ const getAllPostsByAdmin = async (req, res) => {
   }
 };
 
+// update own blog
+const updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content, category } = req.body;
 
-module.exports = { deletePost,createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog, getAllPostsByAdmin,getMyBlogs };
+    // 1️⃣ Check valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid post ID" });
+    }
+
+    // 2️⃣ Find post
+    const post = await BlogPost.findById(id);
+    if (!post || post.isHidden) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // 3️⃣ Ownership check (CORE LOGIC)
+    if (post.author.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You can update only your own posts" });
+    }
+
+    // 4️⃣ Update allowed fields only
+    if (title !== undefined) post.title = title;
+    if (content !== undefined) post.content = content;
+    if (category !== undefined) post.category = category;
+
+    await post.save();
+
+    res.json(post);
+  } catch (err) {
+    console.error("Update post error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+module.exports = { updatePost,deletePost,createPost, getFeed, getPost, upvotePost, deletePost, adminDeleteBlog, getAllPostsByAdmin,getMyBlogs };

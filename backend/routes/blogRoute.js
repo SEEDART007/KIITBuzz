@@ -9,7 +9,8 @@ const {
   deletePost,
   adminDeleteBlog,
   getAllPostsByAdmin,
-  getMyBlogs
+  getMyBlogs,
+  updatePost
 } =  require("../controllers/blogController");
 
 const router = express.Router();
@@ -28,6 +29,7 @@ router.get("/getMyBlogs",auth,getMyBlogs)
 // Get single post
 router.get("/:id", auth,  getPost);
 
+router.put("/blogs/:id", auth, updatePost);
 
 // Upvote
 router.post("/:id/upvote", auth,  upvotePost);

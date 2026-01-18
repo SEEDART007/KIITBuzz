@@ -1,25 +1,45 @@
 import { useState } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function Register() {
+  const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("");
   const [year, setYear] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await api.post("/auth/register", { email, password, department, year });
 
-      // Auto-login: store JWT in localStorage
+    if (!username || !email || !password) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await api.post("/auth/register", {
+        username,
+        email,
+        password,
+        department,
+        year
+      });
+
+      // 🔐 Auto-login (if email verification not enforced yet)
       localStorage.setItem("token", res.data.token);
 
       navigate("/dashboard");
     } catch (err) {
-      alert(err.response?.data?.msg || "Registration failed");
+      toast.error(err?.response?.data?.msg || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,13 +51,24 @@ export default function Register() {
       >
         <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
 
+        {/* Username */}
         <input
-          placeholder="Email"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        {/* Email */}
+        <input
+          placeholder="University Email"
+          type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
+        {/* Password */}
         <input
           placeholder="Password"
           type="password"
@@ -46,6 +77,7 @@ export default function Register() {
           className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
+        {/* Department */}
         <input
           placeholder="Department"
           value={department}
@@ -53,18 +85,20 @@ export default function Register() {
           className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
+        {/* Year */}
         <input
           placeholder="Year"
           value={year}
           onChange={e => setYear(e.target.value)}
-          className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-3 mb-6 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition disabled:opacity-60"
         >
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
       </form>
     </div>

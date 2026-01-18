@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ThumbsUp, Trash2 } from "lucide-react";
+import { Pencil, ThumbsUp, Trash2 } from "lucide-react";
 import api from "../api/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -12,6 +12,8 @@ export default function PostCard({ post, onDelete }) {
   const [upvotes, setUpvotes] = useState(post.upvotes);
   const [hasUpvoted, setHasUpvoted] = useState(post.hasUpvoted || false);
   const [upvoting, setUpvoting] = useState(false);
+
+  
 
   /* ================= OWNERSHIP ================= */
 
@@ -32,7 +34,7 @@ export default function PostCard({ post, onDelete }) {
     try {
       const res = await api.post(`/blogs/${post._id}/upvote`);
       setUpvotes(res.data.upvotes);
-      toast.success("Upvoted 👍");
+      toast.success("Upvoted");
     } catch (err) {
       setHasUpvoted(false);
       setUpvotes(prev => prev - 1);
@@ -42,7 +44,7 @@ export default function PostCard({ post, onDelete }) {
     }
   };
 
-  /* ================= DELETE (UI ONLY) ================= */
+  /* ================= DELETE ================= */
 
   const handleDeleteClick = () => {
     if (!onDelete) return;
@@ -50,7 +52,7 @@ export default function PostCard({ post, onDelete }) {
     const confirm = window.confirm("Are you sure you want to delete this post?");
     if (!confirm) return;
 
-    onDelete(post._id); // 🔥 ONLY call parent
+    onDelete(post._id);
   };
 
   /* ================= UI ================= */
@@ -59,10 +61,10 @@ export default function PostCard({ post, onDelete }) {
     post.content.length > 200
       ? post.content.slice(0, 200) + "..."
       : post.content;
-
+  // const displayName = post.author?.username || "Anonymous";
   return (
     <div className="bg-white p-6 rounded shadow mb-6 hover:shadow-lg transition flex flex-col justify-between min-h-[250px]">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center">
@@ -72,19 +74,30 @@ export default function PostCard({ post, onDelete }) {
             className="w-10 h-10 rounded-full mr-3"
           />
           <div className="text-sm text-gray-500">
-            <span className="font-semibold">Anonymous</span>{" "}
+            <span className="font-semibold">{post.author?.username || "Anonymous"}</span>{" "}
             {post.author?.department} {post.author?.year} | {post.category}
           </div>
         </div>
 
+        {/* Owner Actions */}
         {isOwner && (
-          <button
-            onClick={handleDeleteClick}
-            className="text-red-500 hover:text-red-700"
-            title="Delete post"
-          >
-            <Trash2 size={18} />
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(`/blogs/edit/${post._id}`)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Edit post"
+            >
+              <Pencil size={18} />
+            </button>
+
+            <button
+              onClick={handleDeleteClick}
+              className="text-red-500 hover:text-red-700"
+              title="Delete post"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
         )}
       </div>
 

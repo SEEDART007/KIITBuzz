@@ -14,6 +14,7 @@ import AllBlogs from "./pages/AllBlogs";
 import BlogPage from "./pages/BlogPage";
 import AdminPage from "./pages/AdminPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import EditPost from "./pages/EditPost";
 
 /* ---------------- PROTECTED ROUTES ---------------- */
 
@@ -104,6 +105,7 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route path="/blogs/edit/:id" element={<EditPost />} />
 
         <Route
           path="/analytics"
